@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /* 
@@ -87,7 +89,9 @@ public class MapReduce
         String f3 = scan.next();
         String f3contents = readFile(f3);
         
-        
+        System.out.println("Designate number of threads for Map phase: ");
+        int noThreads = scan.nextInt(); 
+   
         input.put(f1, f1contents);
         input.put(f2, f2contents);
         input.put(f3, f3contents);
@@ -231,10 +235,15 @@ public class MapReduce
                 }
             	
             };
+            //threadpool here 
+            ExecutorService executor = Executors.newFixedThreadPool(noThreads);
             
-            List<Thread> mapCluster = new ArrayList<Thread>(input.size());
+            
+            
+            //List<Thread> mapCluster = new ArrayList<Thread>(input.size());
             
             Iterator<Map.Entry<String, String>> inputIter = input.entrySet().iterator();
+            
             while(inputIter.hasNext()) 
             {
                     
@@ -254,13 +263,16 @@ public class MapReduce
                     
                 });
                 
-                mapCluster.add(t);
-                t.start();
+                executor.execute(t);
+                
+                //mapCluster.add(t);
+                //t.start();
             }
+            executor.shutdown();
             
             
             // wait for mapping phase to be over:
-            for(Thread t : mapCluster) 
+            /*for(Thread t : mapCluster) 
             {
             	
                 try 
@@ -273,6 +285,8 @@ public class MapReduce
                 	throw new RuntimeException(e);
                 }
             }
+            */
+            
             
             
             // GROUP:
@@ -319,6 +333,7 @@ public class MapReduce
                 }
                 
             };
+            
             
             List<Thread> reduceCluster = new ArrayList<Thread>(groupedItems.size());
             
